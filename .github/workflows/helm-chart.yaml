@@ -84,7 +84,7 @@ jobs:
           ls -la "${{ github.workspace }}/charts/"
           echo "Copiando charts..."
           ls -la .
-          cp -R "${{ github.workspace }}/charts/${{inputs.microservice-name}}/"* charts/${{inputs.microservice-name}}/
+          cp -R "${{ github.workspace }}/charts/"* charts/
 
           # Añadir cambios, commitear y pushear
           git add .
