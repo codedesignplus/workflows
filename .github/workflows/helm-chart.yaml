@@ -9,6 +9,15 @@ on:
       microservice-name:
         required: true
         type: string
+      enable-grpc:
+        required: false
+        type: boolean
+      enable-rest:
+        required: false
+        type: boolean
+      enable-worker:
+        required: false
+        type: boolean
 
 env:
   IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
@@ -58,9 +67,23 @@ jobs:
 
       - name: Actualizar Chart.yaml
         run: |
-          sed -i "s/^appVersion:.*/appVersion: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}/Chart.yaml"
-          sed -i "s/^version:.*/version: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}/Chart.yaml"
-          sed -i "s/^    tag:.*/    tag: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}/values.yaml"
+          if [ "${{ inputs.enable-grpc }}" == "true" ]; then
+            sed -i "s/^appVersion:.*/appVersion: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-grpc/Chart.yaml"
+            sed -i "s/^version:.*/version: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-grpc/Chart.yaml"
+            sed -i "s/^    tag:.*/    tag: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-grpc/values.yaml"
+          fi
+
+          if [ "${{ inputs.enable-worker }}" == "true" ]; then
+            sed -i "s/^appVersion:.*/appVersion: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-worker/Chart.yaml"
+            sed -i "s/^version:.*/version: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-worker/Chart.yaml"
+            sed -i "s/^    tag:.*/    tag: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-worker/values.yaml"
+          fi
+
+          if [ "${{ inputs.enable-rest }}" == "true" ]; then
+            sed -i "s/^appVersion:.*/appVersion: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-rest/Chart.yaml"
+            sed -i "s/^version:.*/version: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-rest/Chart.yaml"
+            sed -i "s/^    tag:.*/    tag: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}-rest/values.yaml"
+          fi
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
