@@ -60,6 +60,7 @@ jobs:
         run: |
           sed -i "s/^appVersion:.*/appVersion: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}/Chart.yaml"
           sed -i "s/^version:.*/version: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}/Chart.yaml"
+          sed -i "s/^    tag:.*/    tag: ${{ steps.git-semver.outputs.new-version-prefix }}/" "${{ github.workspace }}/charts/${{inputs.microservice-name}}/values.yaml"
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
