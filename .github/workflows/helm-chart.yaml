@@ -91,7 +91,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Sync charts from source repository"
+            git commit -m "Sync charts - ${{inputs.microservice-name}} from source repository"
             git push origin "main:refs/heads/main"
           fi
 
