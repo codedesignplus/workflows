@@ -88,19 +88,17 @@ jobs:
 
       - name: Run SonarQube
         run: |
-          tree -L 2
-          echo "SonarToken1: ${{ vars.SONAR_TOKEN }}"
-          echo "SonarToken2: ${{ secrets.SONAR_TOKEN }}"
           dotnet sonarscanner begin \
             /o:${{vars.ORGANIZATION}} \
             /k:${{inputs.project-name}} \
             /d:sonar.host.url=${{vars.SERVER}} \
             /d:sonar.coverage.exclusions="tests/**" \
-            /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" \
-            /d:sonar.login=ecdaa166ad2f14cbe2aacbfa9dbeedf9160f9e6a
+            /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" 
           dotnet test ${{inputs.project-name}}.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           dotnet build ${{inputs.project-name}}.sln
-          dotnet sonarscanner end /d:sonar.login=ecdaa166ad2f14cbe2aacbfa9dbeedf9160f9e6a
+          dotnet sonarscanner end
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     
       - name: Push tag
         id: push_tag
