@@ -16,6 +16,8 @@ env:
   IS_RC: ${{ github.ref == 'refs/heads/rc' }}
   IS_BETA: ${{ github.ref == 'refs/heads/dev' }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  ORGANIZATION: ${{ vars.ORGANIZATION }}
+  SERVER: ${{ vars.SERVER }}
   
 permissions:
   contents: write
