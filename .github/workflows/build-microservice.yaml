@@ -9,12 +9,6 @@ on:
       microservice-name:
         required: true
         type: string
-      organization:
-        required: true
-        type: string
-      sonar-server:
-        required: true
-        type: string
       environment:
         required: true
         type: string
