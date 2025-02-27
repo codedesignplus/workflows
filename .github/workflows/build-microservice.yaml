@@ -96,10 +96,11 @@ jobs:
             /k:${{inputs.project-name}} \
             /d:sonar.host.url=${{vars.SERVER}} \
             /d:sonar.coverage.exclusions="tests/**" \
-            /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" 
+            /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" \
+            /d:sonar.login=${{secrets.SONAR_TOKEN}} 
           dotnet test ${{inputs.project-name}}.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           dotnet build ${{inputs.project-name}}.sln
-          dotnet sonarscanner end
+          dotnet sonarscanner end /d:sonar.login=${{secrets.SONAR_TOKEN}}
         env:
           SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
     
