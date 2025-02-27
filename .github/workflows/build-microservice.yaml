@@ -93,7 +93,7 @@ jobs:
         run: |
           dotnet sonarscanner begin \
             /o:${{vars.ORGANIZATION}} \
-            /k:codedesignplus \
+            /k:${{inputs.project-name}} \
             /d:sonar.host.url=${{vars.SERVER}} \
             /d:sonar.coverage.exclusions="tests/**" \
             /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" \
