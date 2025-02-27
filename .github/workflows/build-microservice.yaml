@@ -9,12 +9,14 @@ on:
       microservice-name:
         required: true
         type: string
+      organization:
+        required: true
+        type: string
+      sonar-server:
+        required: true
+        type: string
     secrets:
       SONAR_TOKEN:
-        required: true
-      ORGANIZATION:
-        required: true
-      SERVER:
         required: true
       
   workflow_dispatch:
@@ -97,9 +99,9 @@ jobs:
       - name: Run SonarQube
         run: |
           dotnet sonarscanner begin \
-            /o:${{secrets.ORGANIZATION}} \
+            /o:${{inputs.organization}} \
             /k:${{inputs.project-name}} \
-            /d:sonar.host.url=${{secrets.SERVER}} \
+            /d:sonar.host.url=${{inputs.sonar-server}} \
             /d:sonar.coverage.exclusions="tests/**" \
             /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" 
           dotnet test ${{inputs.project-name}}.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
