@@ -18,6 +18,9 @@ on:
       enable-worker:
         required: false
         type: boolean
+      environment:
+        required: true
+        type: string
 
 env:
   IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
@@ -32,6 +35,7 @@ permissions:
 jobs:
   sync-charts:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }} 
     steps:
       - name: Checkout source repository
         uses: actions/checkout@v4
