@@ -1,5 +1,3 @@
-name: Sync Charts
-
 on:
   workflow_call:
     inputs:

@@ -1,5 +1,3 @@
-name: Build .Net
-
 on:
   workflow_call:
     inputs:
