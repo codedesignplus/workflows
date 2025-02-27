@@ -1,6 +1,5 @@
 name: Publish Container Image
 
-
 on:
   workflow_call:
     inputs:
@@ -10,14 +9,6 @@ on:
       microservice-name:
         required: true
         type: string
-
-# on:
-#   push:
-#     branches:
-#       - main
-#       - rc
-#       - dev
-#       - feature/*
 
 env:
   IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
