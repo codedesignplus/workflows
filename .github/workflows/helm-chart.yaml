@@ -23,8 +23,6 @@ env:
   IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
   IS_RC: ${{ github.ref == 'refs/heads/rc' }}
   IS_BETA: ${{ github.ref == 'refs/heads/dev' }}
-  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
 
 permissions:
   contents: write
@@ -34,7 +32,6 @@ permissions:
 jobs:
   sync-charts:
     runs-on: ubuntu-latest
-    environment: Dev
     steps:
       - name: Checkout source repository
         uses: actions/checkout@v4

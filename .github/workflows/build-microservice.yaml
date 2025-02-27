@@ -9,15 +9,20 @@ on:
       microservice-name:
         required: true
         type: string
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      ORGANIZATION:
+        required: true
+      SERVER:
+        required: true
+      
   workflow_dispatch:
 
 env:
   IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
   IS_RC: ${{ github.ref == 'refs/heads/rc' }}
   IS_BETA: ${{ github.ref == 'refs/heads/dev' }}
-  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  ORGANIZATION: ${{ vars.ORGANIZATION }}
-  SERVER: ${{ vars.SERVER }}
   
 permissions:
   contents: write
@@ -92,14 +97,16 @@ jobs:
       - name: Run SonarQube
         run: |
           dotnet sonarscanner begin \
-            /o:${{vars.ORGANIZATION}} \
+            /o:${{secrets.ORGANIZATION}} \
             /k:${{inputs.project-name}} \
-            /d:sonar.host.url=${{vars.SERVER}} \
+            /d:sonar.host.url=${{secrets.SERVER}} \
             /d:sonar.coverage.exclusions="tests/**" \
             /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" 
           dotnet test ${{inputs.project-name}}.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           dotnet build ${{inputs.project-name}}.sln
           dotnet sonarscanner end
+        env:
+          SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
     
       - name: Push tag
         id: push_tag
