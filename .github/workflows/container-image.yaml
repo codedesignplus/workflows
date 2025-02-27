@@ -9,11 +9,9 @@ on:
       microservice-name:
         required: true
         type: string
-    secrets:
-      DOCKER_HUB_USERNAME:
+      environment:
         required: true
-      DOCKER_HUB_ACCESS_TOKEN:
-        required: true
+        type: string
 
 env:
   IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
@@ -23,6 +21,7 @@ env:
 jobs:
   build:
     name: Build .Net
+    environment: ${{ inputs.environment }} 
     runs-on: ubuntu-latest
     permissions:
       contents: write

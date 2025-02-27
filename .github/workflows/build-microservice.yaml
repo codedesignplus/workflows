@@ -15,9 +15,9 @@ on:
       sonar-server:
         required: true
         type: string
-    secrets:
-      SONAR_TOKEN:
+      environment:
         required: true
+        type: string
       
   workflow_dispatch:
 
@@ -33,7 +33,8 @@ permissions:
 
 jobs:
   build:
-    name: Build .Net      
+    name: Build .Net     
+    environment: ${{ inputs.environment }} 
     runs-on: ubuntu-latest
     
     steps:
@@ -99,9 +100,9 @@ jobs:
       - name: Run SonarQube
         run: |
           dotnet sonarscanner begin \
-            /o:${{inputs.organization}} \
+            /o:${{vars.ORGANIZATION}} \
             /k:${{inputs.project-name}} \
-            /d:sonar.host.url=${{inputs.sonar-server}} \
+            /d:sonar.host.url=${{vars.SERVER}} \
             /d:sonar.coverage.exclusions="tests/**" \
             /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" 
           dotnet test ${{inputs.project-name}}.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
