@@ -98,8 +98,6 @@ jobs:
           dotnet test ${{inputs.project-name}}.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           dotnet build ${{inputs.project-name}}.sln
           dotnet sonarscanner end
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     
       - name: Push tag
         id: push_tag
