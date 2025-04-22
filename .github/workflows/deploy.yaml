@@ -84,22 +84,20 @@ jobs:
       - name: Create kubeconfig file
         run: echo "${{ secrets.KUBECONFIG }}" > ${{ github.workspace }}/kubeconfig
 
-      - name: Helm - Init
-        run: helm init
-        continue-on-error: true
-
-      - name: Helm - Update repo
-        run: helm repo update
-
-      - name: Helm - Dependency Update GRPC
+      - name: Helm - GRPC
         if: ${{ inputs.enable-grpc }}
-        run: helm dependency update ./charts/${{ inputs.microservice-name }}-grpc          
+        run: |
+          ls -la
+          helm dependency update ./charts/${{ inputs.microservice-name }}-grpc          
+          helm lint ./charts/${{ inputs.microservice-name }}-grpc
+          helm template ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
 
       - name: Helm - Deploy GRPC
         if: ${{ inputs.enable-grpc }}
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
-        run: helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
+        run: |
+          helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-grpc/values.yaml --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
 
       - name: Helm - Dependency Update REST
         if: ${{ inputs.enable-rest }}
