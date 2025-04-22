@@ -88,12 +88,7 @@ jobs:
           helm dependency update ./charts/${{ inputs.microservice-name }}-grpc          
           helm lint ./charts/${{ inputs.microservice-name }}-grpc
           helm template ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
-
-
-      - name: Helm - Deploy gRPC
-        if: ${{ inputs.enable-grpc }}
-        run: |
-          helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-grpc/values.yaml --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
+          helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-grpc/values.yaml --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
 
       # Helm - Rest
       - name: Helm - Rest
@@ -102,10 +97,7 @@ jobs:
           helm dependency update ./charts/${{ inputs.microservice-name }}-rest
           helm lint ./charts/${{ inputs.microservice-name }}-rest
           helm template ./charts/${{ inputs.microservice-name }}-rest --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
-          
-      - name: Helm - Deploy Rest
-        if: ${{ inputs.enable-rest }}
-        run: helm upgrade --install ${{ inputs.microservice-name }}-rest ./charts/${{ inputs.microservice-name }}-rest --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-rest/values.yaml --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
+          helm upgrade --install ${{ inputs.microservice-name }}-rest ./charts/${{ inputs.microservice-name }}-rest --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-rest/values.yaml --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
 
       # Helm - Worker
       - name: Helm - Dependency Update Worker
@@ -114,7 +106,4 @@ jobs:
           helm dependency update ./charts/${{ inputs.microservice-name }}-worker
           helm lint ./charts/${{ inputs.microservice-name }}-worker
           helm template ./charts/${{ inputs.microservice-name }}-worker --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
-
-      - name: Helm - Deploy Worker
-        if: ${{ inputs.enable-worker }}
-        run: helm upgrade --install ${{ inputs.microservice-name }}-worker ./charts/${{ inputs.microservice-name }}-worker --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-worker/values.yaml --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
+          helm upgrade --install ${{ inputs.microservice-name }}-worker ./charts/${{ inputs.microservice-name }}-worker --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-worker/values.yaml --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
