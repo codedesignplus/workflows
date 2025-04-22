@@ -1,0 +1,72 @@
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+      microservice-name:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      
+  workflow_dispatch:
+
+env:
+  IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
+  IS_RC: ${{ github.ref == 'refs/heads/rc' }}
+  IS_BETA: ${{ github.ref == 'refs/heads/dev' }}
+  
+permissions:
+  contents: write
+  packages: write
+  repository-projects: write
+
+jobs:
+  build:
+    name: SonarQube .Net     
+    environment: ${{ inputs.environment }} 
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Setup .NET SDK 🚧
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+             
+      - name: Install Sonar Scanner .Net
+        run: dotnet tool update -g dotnet-sonarscanner
+  
+      - name: Install Dependencies
+        run: dotnet restore 
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Run SonarQube
+        run: |
+          dotnet sonarscanner begin \
+            /o:${{vars.ORGANIZATION}} \
+            /k:${{inputs.project-name}} \
+            /d:sonar.host.url=${{vars.SERVER}} \
+            /d:sonar.coverage.exclusions="tests/**" \
+            /d:sonar.cs.opencover.reportsPaths="tests/**/coverage.opencover.xml" \
+            /d:sonar.login=${{secrets.SONAR_TOKEN}} 
+          dotnet test ${{inputs.project-name}}.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+          dotnet build ${{inputs.project-name}}.sln
+          dotnet sonarscanner end /d:sonar.login=${{secrets.SONAR_TOKEN}}
+        env:
+          SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
