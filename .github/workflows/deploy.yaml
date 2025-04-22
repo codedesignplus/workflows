@@ -89,7 +89,7 @@ jobs:
           admin: 'false'
           use-kubelogin: 'true'
 
-      - name: Configure deployment
+      - name: Grpc - Configure deployment
         uses: azure/k8s-bake@v2.2
         if: ${{ inputs.enable-grpc }}
         with:
@@ -98,12 +98,51 @@ jobs:
           helm-version: ${{ steps.git-semver.outputs.new-version-prefix }}
         id: bake-grpc
 
-      - name: Deploys application
+      - name: Grpc - Deploys application
         uses: Azure/k8s-deploy@v4
         if: ${{ inputs.enable-grpc }}
         with:
           manifests: ${{ steps.bake-grpc.outputs.manifestsBundle }}
           images: |
             ${{ env.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
+          # imagepullsecrets: |
+          #   ${{ env.PROJECT_NAME }}
+
+          
+      - name: Rest - Configure deployment
+        uses: azure/k8s-bake@v2.2
+        if: ${{ inputs.enable-rest }}
+        with:
+          renderEngine: 'helm'
+          helmChart: './charts/${{ inputs.microservice-name }}-rest'
+          helm-version: ${{ steps.git-semver.outputs.new-version-prefix }}
+        id: bake-rest
+
+      - name: Rest - Deploys application
+        uses: Azure/k8s-deploy@v4
+        if: ${{ inputs.enable-rest }}
+        with:
+          manifests: ${{ steps.bake-grpc.outputs.manifestsBundle }}
+          images: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
+          # imagepullsecrets: |
+          #   ${{ env.PROJECT_NAME }}
+      
+      - name: Worker - Configure deployment
+        uses: azure/k8s-bake@v2.2
+        if: ${{ inputs.enable-worker }}
+        with:
+          renderEngine: 'helm'
+          helmChart: './charts/${{ inputs.microservice-name }}-worker'
+          helm-version: ${{ steps.git-semver.outputs.new-version-prefix }}
+        id: bake-worker
+  
+      - name: Worker - Deploys application
+        uses: Azure/k8s-deploy@v4
+        if: ${{ inputs.enable-worker }}
+        with:
+          manifests: ${{ steps.bake-grpc.outputs.manifestsBundle }}
+          images: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
           # imagepullsecrets: |
           #   ${{ env.PROJECT_NAME }}
