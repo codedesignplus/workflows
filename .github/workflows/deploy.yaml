@@ -29,6 +29,7 @@ permissions:
   contents: write
   packages: write
   repository-projects: write
+  id-token: write
 
 jobs:
   deploy:
