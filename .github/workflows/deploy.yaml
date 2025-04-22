@@ -1,0 +1,109 @@
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+      microservice-name:
+        required: true
+        type: string
+      enable-grpc:
+        required: false
+        type: boolean
+      enable-rest:
+        required: false
+        type: boolean
+      enable-worker:
+        required: false
+        type: boolean
+      environment:
+        required: true
+        type: string
+
+env:
+  IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
+  IS_RC: ${{ github.ref == 'refs/heads/rc' }}
+  IS_BETA: ${{ github.ref == 'refs/heads/dev' }}
+
+permissions:
+  contents: write
+  packages: write
+  repository-projects: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }} 
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SemVer
+        id: git-semver
+        uses: codedesignplus/semver-git-version@v0.1.10
+        with:
+          folder: ${{ github.workspace }}
+          release-branch: 'main'
+          release-candidate-branch: 'rc'
+          beta-branch: 'dev'
+          major-identifier: breaking
+          minor-identifier: feat
+          prefix: v
+          dir-affected: ./
+          previous-version: true
+          new-version: true
+
+      - name: Print Output
+        id: output
+        run: |
+          echo "Previous Tag ${{ steps.git-semver.outputs.previous-tag }}"
+          echo "Previous Version ${{ steps.git-semver.outputs.previous-version }}"
+          echo "Previous Version Prefix ${{ steps.git-semver.outputs.previous-version-prefix }}"
+          echo "New Version ${{ steps.git-semver.outputs.new-version }}"
+          echo "New Version Prefix ${{ steps.git-semver.outputs.new-version-prefix }}"
+
+      # - name: Azure Login
+      #   uses: azure/login@14a755a4e2fd6dff25794233def4f2cf3f866955
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # - name: Build image on ACR
+      #   uses: azure/CLI@61bb69d64d613b52663984bf12d6bac8fd7b3cc8
+      #   with:
+      #     azcliversion: 2.29.1
+      #     inlineScript: |
+      #       az configure --defaults acr=${{ env.AZURE_CONTAINER_REGISTRY }}
+      #       az acr build -t -t ${{ env.REGISTRY_URL }}/${{ env.PROJECT_NAME }}:${{ github.sha }}
+      - uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - uses: azure/aks-set-context@v3
+        with:
+          resource-group: '<resource group name>'
+          cluster-name: '<cluster name>'
+          admin: 'false'
+          use-kubelogin: 'true'
+
+      - name: Configure deployment
+        uses: azure/k8s-bake@v2.2
+        if: ${{ inputs.enable-grpc }}
+        with:
+          renderEngine: 'helm'
+          helmChart: './charts/${{ inputs.microservice-name }}-grpc'
+          helm-version: ${{ steps.git-semver.outputs.new-version-prefix }}
+        id: bake-grpc
+
+      - name: Deploys application
+        uses: Azure/k8s-deploy@v4
+        if: ${{ inputs.enable-grpc }}
+        with:
+          manifests: ${{ steps.bake-grpc.outputs.manifestsBundle }}
+          images: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
+          # imagepullsecrets: |
+          #   ${{ env.PROJECT_NAME }}
