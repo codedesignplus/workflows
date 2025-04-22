@@ -18,7 +18,7 @@ env:
 
 jobs:
   create-image:
-    name: Build .Net
+    name: Create Image
     environment: ${{ inputs.environment }} 
     runs-on: ubuntu-latest
     permissions:

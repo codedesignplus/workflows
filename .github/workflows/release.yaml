@@ -24,8 +24,8 @@ permissions:
   repository-projects: write
 
 jobs:
-  build:
-    name: Build .Net     
+  version:
+    name: Create Version
     environment: ${{ inputs.environment }} 
     runs-on: ubuntu-latest
     
