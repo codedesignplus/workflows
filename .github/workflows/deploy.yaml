@@ -65,6 +65,14 @@ jobs:
           echo "New Version ${{ steps.git-semver.outputs.new-version }}"
           echo "New Version Prefix ${{ steps.git-semver.outputs.new-version-prefix }}"
 
+          echo "Env: ${{ inputs.environment }}"
+          echo "Resource Group: ${{ env.AZURE_RESOURCE_GROUP }}"
+          echo "Cluster Name: ${{ env.AZURE_CLUSTER_NAME }}"
+          echo "Container Registry: ${{ env.AZURE_CONTAINER_REGISTRY }}"
+          echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
+          echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
+          echo "Subscription ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+
       # - name: Azure Login
       #   uses: azure/login@14a755a4e2fd6dff25794233def4f2cf3f866955
       #   with:
@@ -87,9 +95,9 @@ jobs:
       
       - uses: azure/aks-set-context@v3
         with:
-          resource-group: '<resource group name>'
-          cluster-name: '<cluster name>'
-          admin: 'false'
+          resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
+          cluster-name: '${{ env.AZURE_CLUSTER_NAME }}'
+          admin: 'true'
           use-kubelogin: 'true'
 
       - name: Grpc - Configure deployment
