@@ -81,21 +81,14 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4.3.0
 
-      - name: Create kubeconfig file
-        run: |
-          echo "${{ secrets.KUBECONFIG }}" > ${{ github.workspace }}/kubeconfig
-          helm version
-          kubectl version
-          kubectl get pods --all-namespaces
-
       # Helm - gRPC 
       - name: Helm - gRPC
         if: ${{ inputs.enable-grpc }}
         run: |
-          ls -la
           helm dependency update ./charts/${{ inputs.microservice-name }}-grpc          
           helm lint ./charts/${{ inputs.microservice-name }}-grpc
           helm template ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
+
 
       - name: Helm - Deploy gRPC
         if: ${{ inputs.enable-grpc }}
@@ -108,7 +101,6 @@ jobs:
       - name: Helm - Rest
         if: ${{ inputs.enable-rest }}
         run: |
-          ls -la
           helm dependency update ./charts/${{ inputs.microservice-name }}-rest
           helm lint ./charts/${{ inputs.microservice-name }}-rest
           helm template ./charts/${{ inputs.microservice-name }}-rest --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
@@ -123,7 +115,6 @@ jobs:
       - name: Helm - Dependency Update Worker
         if: ${{ inputs.enable-worker }}
         run: |
-          ls -la
           helm dependency update ./charts/${{ inputs.microservice-name }}-worker
           helm lint ./charts/${{ inputs.microservice-name }}-worker
           helm template ./charts/${{ inputs.microservice-name }}-worker --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
