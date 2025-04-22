@@ -84,11 +84,9 @@ jobs:
       - name: Create kubeconfig file
         run: echo "${{ secrets.KUBECONFIG }}" > ${{ github.workspace }}/kubeconfig
 
-      - name: Set up Helm
-        run: |
-          mkdir -p ~/.helm/repository
-          helm repo add codedesignplus https://www.codedesignplus.com/helm-charts/
-          helm repo update
+      - name: Helm - Init
+        run: helm init
+        continue-on-error: true
 
       - name: Helm - Update repo
         run: helm repo update
