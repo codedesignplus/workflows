@@ -84,17 +84,35 @@ jobs:
       - name: Create kubeconfig file
         run: echo "${{ secrets.KUBECONFIG }}" > ${{ github.workspace }}/kubeconfig
 
+      - name: Helm - Add repo
+        run: helm repo add codedesignplus https://www.codedesignplus.com/helm-charts/
+
+      - name: Helm - Update repo
+        run: helm repo update
+
+      - name: Helm - Dependency Update GRPC
+        if: ${{ inputs.enable-grpc }}
+        run: helm dependency update ./charts/${{ inputs.microservice-name }}-grpc          
+
       - name: Helm - Deploy GRPC
         if: ${{ inputs.enable-grpc }}
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
 
+      - name: Helm - Dependency Update REST
+        if: ${{ inputs.enable-rest }}
+        run: helm dependency update ./charts/${{ inputs.microservice-name }}-rest
+          
       - name: Helm - Deploy REST
         if: ${{ inputs.enable-rest }}
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
         run: helm upgrade --install ${{ inputs.microservice-name }}-rest ./charts/${{ inputs.microservice-name }}-rest --namespace ${{ vars.NAMESPACE }} --set image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest --set image.tag=${{ steps.git-semver.outputs.new-version-prefix }}
+
+      - name: Helm - Dependency Update Worker
+        if: ${{ inputs.enable-worker }}
+        run: helm dependency update ./charts/${{ inputs.microservice-name }}-worker
 
       - name: Helm - Deploy Worker
         if: ${{ inputs.enable-worker }}
