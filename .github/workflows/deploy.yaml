@@ -65,38 +65,16 @@ jobs:
           echo "New Version ${{ steps.git-semver.outputs.new-version }}"
           echo "New Version Prefix ${{ steps.git-semver.outputs.new-version-prefix }}"
 
-          echo "Env: ${{ inputs.environment }}"
-          echo "Resource Group: ${{ env.AZURE_RESOURCE_GROUP }}"
-          echo "Cluster Name: ${{ env.AZURE_CLUSTER_NAME }}"
-          echo "Container Registry: ${{ env.AZURE_CONTAINER_REGISTRY }}"
-          echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
-          echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
-          echo "Subscription ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-
-      # - name: Azure Login
-      #   uses: azure/login@14a755a4e2fd6dff25794233def4f2cf3f866955
-      #   with:
-      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      # - name: Build image on ACR
-      #   uses: azure/CLI@61bb69d64d613b52663984bf12d6bac8fd7b3cc8
-      #   with:
-      #     azcliversion: 2.29.1
-      #     inlineScript: |
-      #       az configure --defaults acr=${{ env.AZURE_CONTAINER_REGISTRY }}
-      #       az acr build -t -t ${{ env.REGISTRY_URL }}/${{ env.PROJECT_NAME }}:${{ github.sha }}
       - uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          allow-no-subscriptions: true
-
       
       - uses: azure/aks-set-context@v3
         with:
-          resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
-          cluster-name: '${{ env.AZURE_CLUSTER_NAME }}'
+          resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
+          cluster-name: '${{ vars.AZURE_CLUSTER_NAME }}'
           admin: 'true'
           use-kubelogin: 'true'
 
@@ -115,7 +93,7 @@ jobs:
         with:
           manifests: ${{ steps.bake-grpc.outputs.manifestsBundle }}
           images: |
-            ${{ env.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
+            ${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
           # imagepullsecrets: |
           #   ${{ env.PROJECT_NAME }}
 
@@ -135,7 +113,7 @@ jobs:
         with:
           manifests: ${{ steps.bake-grpc.outputs.manifestsBundle }}
           images: |
-            ${{ env.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
+            ${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
           # imagepullsecrets: |
           #   ${{ env.PROJECT_NAME }}
       
@@ -154,6 +132,6 @@ jobs:
         with:
           manifests: ${{ steps.bake-grpc.outputs.manifestsBundle }}
           images: |
-            ${{ env.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
+            ${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
           # imagepullsecrets: |
           #   ${{ env.PROJECT_NAME }}
