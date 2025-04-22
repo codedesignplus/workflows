@@ -24,7 +24,7 @@ permissions:
   repository-projects: write
 
 jobs:
-  build:
+  sonarqube:
     name: SonarQube .Net     
     environment: ${{ inputs.environment }} 
     runs-on: ubuntu-latest

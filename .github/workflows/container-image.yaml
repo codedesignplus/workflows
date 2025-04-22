@@ -17,7 +17,7 @@ env:
   IS_BETA: ${{ github.ref == 'refs/heads/dev' }}
 
 jobs:
-  build:
+  create-image:
     name: Build .Net
     environment: ${{ inputs.environment }} 
     runs-on: ubuntu-latest
