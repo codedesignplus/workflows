@@ -34,7 +34,7 @@ permissions:
 jobs:
   deploy:
     name: Deploy into Kubernetes
-    runs-on: self-hosted
+    runs-on: vm-k8s
     environment: ${{ inputs.environment }} 
     steps:
       - name: Checkout source repository
