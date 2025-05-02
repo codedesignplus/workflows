@@ -100,7 +100,13 @@ jobs:
           helm lint ./charts/${{ inputs.microservice-name }}-grpc
 
           echo "3. Template gRPC Chart"
-          helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-grpc/${{inputs.environment}}.yaml --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
+          helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc \
+            --namespace ${{ vars.NAMESPACE }} \
+            --values ./charts/${{ inputs.microservice-name }}-grpc/${{inputs.environment}}.yaml \
+            --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc \
+            --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
+            --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
+            --create-namespace
 
       # Helm - Rest
       - name: Helm - Rest
@@ -113,7 +119,13 @@ jobs:
           helm lint ./charts/${{ inputs.microservice-name }}-rest
 
           echo "3. Template Rest Chart"
-          helm upgrade --install ${{ inputs.microservice-name }}-rest ./charts/${{ inputs.microservice-name }}-rest --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-rest/${{inputs.environment}}.yaml --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
+          helm upgrade --install ${{ inputs.microservice-name }}-rest ./charts/${{ inputs.microservice-name }}-rest \
+            --namespace ${{ vars.NAMESPACE }} \
+            --values ./charts/${{ inputs.microservice-name }}-rest/${{inputs.environment}}.yaml \
+            --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest \
+            --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
+            --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
+            --create-namespace
 
       # Helm - Worker
       - name: Helm - Dependency Update Worker
@@ -126,4 +138,10 @@ jobs:
           helm lint ./charts/${{ inputs.microservice-name }}-worker
           
           echo "3. Template Worker Chart"
-          helm upgrade --install ${{ inputs.microservice-name }}-worker ./charts/${{ inputs.microservice-name }}-worker --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-worker/${{inputs.environment}}.yaml --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
+          helm upgrade --install ${{ inputs.microservice-name }}-worker ./charts/${{ inputs.microservice-name }}-worker \
+            --namespace ${{ vars.NAMESPACE }} \
+            --values ./charts/${{ inputs.microservice-name }}-worker/${{inputs.environment}}.yaml \
+            --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker \
+            --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
+            --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
+            --create-namespace
