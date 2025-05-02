@@ -1,0 +1,129 @@
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+      microservice-name:
+        required: true
+        type: string
+      enable-grpc:
+        required: false
+        type: boolean
+      enable-rest:
+        required: false
+        type: boolean
+      enable-worker:
+        required: false
+        type: boolean
+      environment:
+        required: true
+        type: string
+
+env:
+  IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
+  IS_RC: ${{ github.ref == 'refs/heads/rc' }}
+  IS_BETA: ${{ github.ref == 'refs/heads/dev' }}
+
+permissions:
+  contents: write
+  packages: write
+  repository-projects: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy into Kubernetes
+    runs-on: self-hosted
+    environment: ${{ inputs.environment }} 
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SemVer
+        id: git-semver
+        uses: codedesignplus/semver-git-version@v0.1.10
+        with:
+          folder: ${{ github.workspace }}
+          release-branch: 'main'
+          release-candidate-branch: 'rc'
+          beta-branch: 'dev'
+          major-identifier: breaking
+          minor-identifier: feat
+          prefix: v
+          dir-affected: ./
+          previous-version: true
+          new-version: true
+
+      - name: Print Output
+        id: output
+        run: |
+          echo "Previous Tag ${{ steps.git-semver.outputs.previous-tag }}"
+          echo "Previous Version ${{ steps.git-semver.outputs.previous-version }}"
+          echo "Previous Version Prefix ${{ steps.git-semver.outputs.previous-version-prefix }}"
+          echo "New Version ${{ steps.git-semver.outputs.new-version }}"
+          echo "New Version Prefix ${{ steps.git-semver.outputs.new-version-prefix }}"
+
+      # - uses: azure/login@v1
+      #   with:
+      #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      # - uses: azure/aks-set-context@v3
+      #   with:
+      #     resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
+      #     cluster-name: '${{ vars.AZURE_CLUSTER_NAME }}'
+      #     admin: 'true'
+      #     use-kubelogin: 'true'
+
+      - name: Create Kubeconfig
+        run: |
+          echo "1. Create Kubeconfig"
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+      
+      - name: Install Helm
+        uses: azure/setup-helm@v4.3.0
+
+      # Helm - gRPC 
+      - name: Helm - gRPC
+        if: ${{ inputs.enable-grpc }}
+        run: |
+          echo "1. Updating Chart.yaml for gRPC"
+          helm dependency update ./charts/${{ inputs.microservice-name }}-grpc          
+
+          echo "2. Linting gRPC Chart"
+          helm lint ./charts/${{ inputs.microservice-name }}-grpc
+
+          echo "3. Template gRPC Chart"
+          helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-grpc/${{inputs.environment}}.yaml --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
+
+      # Helm - Rest
+      - name: Helm - Rest
+        if: ${{ inputs.enable-rest }}
+        run: |
+          echo "1. Updating Chart.yaml for Rest"
+          helm dependency update ./charts/${{ inputs.microservice-name }}-rest
+
+          echo "2. Linting Rest Chart"
+          helm lint ./charts/${{ inputs.microservice-name }}-rest
+
+          echo "3. Template Rest Chart"
+          helm upgrade --install ${{ inputs.microservice-name }}-rest ./charts/${{ inputs.microservice-name }}-rest --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-rest/${{inputs.environment}}.yaml --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
+
+      # Helm - Worker
+      - name: Helm - Dependency Update Worker
+        if: ${{ inputs.enable-worker }}
+        run: |
+          echo "1. Updating Chart.yaml for Worker"
+          helm dependency update ./charts/${{ inputs.microservice-name }}-worker
+          
+          echo "2. Linting Worker Chart"
+          helm lint ./charts/${{ inputs.microservice-name }}-worker
+          
+          echo "3. Template Worker Chart"
+          helm upgrade --install ${{ inputs.microservice-name }}-worker ./charts/${{ inputs.microservice-name }}-worker --namespace ${{ vars.NAMESPACE }} --values ./charts/${{ inputs.microservice-name }}-worker/${{inputs.environment}}.yaml --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} --create-namespace
