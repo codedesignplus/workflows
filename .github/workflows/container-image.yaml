@@ -92,7 +92,7 @@ jobs:
       uses: docker/setup-buildx-action@v1
 
     - name: Log in to Docker Hub
-      if: inputs.publish-to-docker-hub == 'true'
+      if: inputs.publish-to-docker-hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -100,7 +100,7 @@ jobs:
 
     - name: Build & Push | Docker Hub - Rest API 
       uses: docker/build-push-action@v6
-      if: inputs.publish-to-docker-hub == 'true'
+      if: inputs.publish-to-docker-hub
       with:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
@@ -109,7 +109,7 @@ jobs:
 
     - name: Build & Push | Docker Hub - Worker
       uses: docker/build-push-action@v6
-      if: env.WORKER_EXISTS == 'true' && inputs.publish-to-docker-hub == 'true'
+      if: env.WORKER_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
@@ -118,7 +118,7 @@ jobs:
 
     - name: Build & Push | Docker Hub - gRpc
       uses: docker/build-push-action@v6
-      if: env.GRPC_EXISTS == 'true' && inputs.publish-to-docker-hub == 'true'
+      if: env.GRPC_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
@@ -129,7 +129,7 @@ jobs:
 
     - name: Log in to GitHub Packages
       uses: docker/login-action@v3
-      if: inputs.publish-to-github-packages == 'true'
+      if: inputs.publish-to-github-packages
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -137,7 +137,7 @@ jobs:
 
     - name: Build & Push | GitHub Packages - Rest API
       uses: docker/build-push-action@v6
-      if: inputs.publish-to-github-packages == 'true'
+      if: inputs.publish-to-github-packages
       with:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
@@ -146,7 +146,7 @@ jobs:
     
     - name: Build & Push | GitHub Packages - Worker
       uses: docker/build-push-action@v6
-      if: env.WORKER_EXISTS == 'true' && inputs.publish-to-github-packages == 'true'
+      if: env.WORKER_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
@@ -155,7 +155,7 @@ jobs:
     
     - name: Build & Push | GitHub Packages - gRpc
       uses: docker/build-push-action@v6
-      if: env.GRPC_EXISTS == 'true' && inputs.publish-to-github-packages == 'true'
+      if: env.GRPC_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
