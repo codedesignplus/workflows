@@ -106,6 +106,7 @@ jobs:
             --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc \
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
             --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
+            --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
             --create-namespace
 
       # Helm - Rest
@@ -125,6 +126,7 @@ jobs:
             --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest \
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
             --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
+            --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
             --create-namespace
 
       # Helm - Worker
@@ -144,4 +146,5 @@ jobs:
             --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker \
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
             --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
+            --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
             --create-namespace
