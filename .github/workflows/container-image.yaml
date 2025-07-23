@@ -124,7 +124,35 @@ jobs:
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
+
         
+    - name: Build & Push | Docker Hub - Rest API 
+      uses: docker/build-push-action@v6
+      if: inputs.publish-to-docker-hub
+      with:
+        context: .
+        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
+        push: true
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:latest
+
+    - name: Build & Push | Docker Hub - Worker
+      uses: docker/build-push-action@v6
+      if: env.WORKER_EXISTS == 'true' && inputs.publish-to-docker-hub
+      with:
+        context: .
+        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
+        push: true
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:latest
+
+    - name: Build & Push | Docker Hub - gRpc
+      uses: docker/build-push-action@v6
+      if: env.GRPC_EXISTS == 'true' && inputs.publish-to-docker-hub
+      with:
+        context: .
+        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
+        push: true
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:latest
+
 
 
     - name: Log in to GitHub Packages
@@ -161,3 +189,39 @@ jobs:
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
+
+    
+    - name: Log in to GitHub Packages
+      uses: docker/login-action@v3
+      if: inputs.publish-to-github-packages
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build & Push | GitHub Packages - Rest API
+      uses: docker/build-push-action@v6
+      if: inputs.publish-to-github-packages
+      with:
+        context: .
+        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:latest
+
+    - name: Build & Push | GitHub Packages - Worker
+      uses: docker/build-push-action@v6
+      if: env.WORKER_EXISTS == 'true' && inputs.publish-to-github-packages
+      with:
+        context: .
+        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:latest
+
+    - name: Build & Push | GitHub Packages - gRpc
+      uses: docker/build-push-action@v6
+      if: env.GRPC_EXISTS == 'true' && inputs.publish-to-github-packages
+      with:
+        context: .
+        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:latest
