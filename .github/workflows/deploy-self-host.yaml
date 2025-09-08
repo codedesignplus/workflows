@@ -1,5 +1,10 @@
 on:
   workflow_call:
+    secrets:
+      KUBE_CONFIG:
+        required: false
+      VAULT_TOKEN:
+        required: false
     inputs:
       project-name:
         required: true
@@ -18,12 +23,6 @@ on:
         type: boolean
       environment:
         required: true
-        type: string
-      kubeconfig:
-        required: false
-        type: string
-      vault-token:
-        required: false
         type: string
 
 env:
@@ -89,13 +88,7 @@ jobs:
         run: |
           echo "1. Create Kubeconfig"
           mkdir -p $HOME/.kube
-          if [ -z "${{ inputs.kubeconfig }}" ]; then
-            echo "Using default KUBE_CONFIG secret"
-            echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
-          else
-            echo "Using custom KUBECONFIG input"
-            echo "${{ inputs.kubeconfig }}" | base64 --decode > $HOME/.kube/config
-          fi
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
       
       - name: Install Helm
@@ -117,7 +110,7 @@ jobs:
             --values ./charts/${{ inputs.microservice-name }}-grpc/${{inputs.environment}}.yaml \
             --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-grpc \
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
-            --set ms-base.vault.token=${{ inputs.vault-token != '' && inputs.vault-token || secrets.VAULT_TOKEN }} \
+            --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
             --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
             --create-namespace
 
@@ -137,7 +130,7 @@ jobs:
             --values ./charts/${{ inputs.microservice-name }}-rest/${{inputs.environment}}.yaml \
             --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-rest \
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
-            --set ms-base.vault.token=${{ inputs.vault-token != '' && inputs.vault-token || secrets.VAULT_TOKEN }} \
+            --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
             --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
             --create-namespace
 
@@ -157,6 +150,6 @@ jobs:
             --values ./charts/${{ inputs.microservice-name }}-worker/${{inputs.environment}}.yaml \
             --set ms-base.image.repository=${{ vars.CONTAINER_REGISTRY }}/${{ inputs.microservice-name }}-worker \
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
-            --set ms-base.vault.token=${{ inputs.vault-token != '' && inputs.vault-token || secrets.VAULT_TOKEN }} \
+            --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
             --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
             --create-namespace
