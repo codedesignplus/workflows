@@ -73,6 +73,13 @@ jobs:
     - name: Check if Projects Exist
       id: check-projects
       run: |
+        if [ -f "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/${{inputs.project-name}}.Rest.csproj" ]; then
+          echo "REST_EXISTS=true" >> $GITHUB_ENV
+          echo "REST_EXISTS=true"
+        else
+          echo "REST_EXISTS=false" >> $GITHUB_ENV
+          echo "REST_EXISTS=false"
+        fi
         if [ -f "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/${{inputs.project-name}}.gRpc.csproj" ]; then
           echo "GRPC_EXISTS=true" >> $GITHUB_ENV
           echo "GRPC_EXISTS=true"
@@ -85,7 +92,7 @@ jobs:
           echo "WORKER_EXISTS=true"
         else
           echo "WORKER_EXISTS=false" >> $GITHUB_ENV
-          \echo "WORKER_EXISTS=false"
+          echo "WORKER_EXISTS=false"
         fi
 
     - name: Set up Docker
@@ -100,7 +107,7 @@ jobs:
 
     - name: Build & Push | Docker Hub - Rest API 
       uses: docker/build-push-action@v6
-      if: inputs.publish-to-docker-hub
+      if: env.REST_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
