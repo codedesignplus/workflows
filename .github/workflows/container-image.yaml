@@ -208,7 +208,7 @@ jobs:
 
     - name: Build & Push | GitHub Packages - Rest API
       uses: docker/build-push-action@v6
-      if: inputs.publish-to-github-packages
+      if: env.REST_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
