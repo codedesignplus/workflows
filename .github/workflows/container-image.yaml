@@ -112,6 +112,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
 
     - name: Build & Push | Docker Hub - Worker
@@ -121,6 +124,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
 
     - name: Build & Push | Docker Hub - gRpc
@@ -130,6 +136,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
 
         
@@ -140,6 +149,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:latest
 
     - name: Build & Push | Docker Hub - Worker
@@ -149,6 +161,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:latest
 
     - name: Build & Push | Docker Hub - gRpc
@@ -158,6 +173,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:latest
 
 
@@ -177,6 +195,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
     
     - name: Build & Push | GitHub Packages - Worker
@@ -186,6 +207,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
     
     - name: Build & Push | GitHub Packages - gRpc
@@ -195,6 +219,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
 
     
@@ -213,6 +240,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:latest
 
     - name: Build & Push | GitHub Packages - Worker
@@ -222,6 +252,9 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:latest
 
     - name: Build & Push | GitHub Packages - gRpc
@@ -231,4 +264,7 @@ jobs:
         context: .
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
+        build-args: |
+          NUGET_PACKAGES_USER=${{ secrets.NUGET_PACKAGES_USER }}
+          NUGET_PACKAGES_TOKEN=${{ secrets.NUGET_PACKAGES_TOKEN }}
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:latest
