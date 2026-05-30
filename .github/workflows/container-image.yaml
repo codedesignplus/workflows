@@ -100,7 +100,11 @@ jobs:
         fi
 
     - name: Set up Docker
-      uses: docker/setup-buildx-action@v1
+      id: buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        buildkitd-flags: --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
+        driver-opts: network=host
 
     - name: Log in to Docker Hub
       if: inputs.publish-to-docker-hub
@@ -114,6 +118,7 @@ jobs:
       if: env.REST_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
@@ -123,6 +128,7 @@ jobs:
       if: env.WORKER_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
@@ -132,6 +138,7 @@ jobs:
       if: env.GRPC_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
@@ -142,6 +149,7 @@ jobs:
       if: env.REST_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:latest
@@ -151,6 +159,7 @@ jobs:
       if: env.WORKER_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:latest
@@ -160,6 +169,7 @@ jobs:
       if: env.GRPC_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:latest
@@ -179,6 +189,7 @@ jobs:
       if: env.REST_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
@@ -188,6 +199,7 @@ jobs:
       if: env.WORKER_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
@@ -197,6 +209,7 @@ jobs:
       if: env.GRPC_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
@@ -215,6 +228,7 @@ jobs:
       if: env.REST_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:latest
@@ -224,6 +238,7 @@ jobs:
       if: env.WORKER_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:latest
@@ -233,6 +248,7 @@ jobs:
       if: env.GRPC_EXISTS == 'true' && inputs.publish-to-github-packages
       with:
         context: .
+        builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:latest
