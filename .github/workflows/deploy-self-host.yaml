@@ -24,6 +24,10 @@ on:
       environment:
         required: true
         type: string
+      runner:
+        required: false
+        type: string
+        default: vm-k8s
 
 env:
   IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
@@ -39,7 +43,7 @@ permissions:
 jobs:
   deploy:
     name: Deploy into Kubernetes
-    runs-on: vm-k8s
+    runs-on: ${{ inputs.runner }}
     environment: ${{ inputs.environment }} 
     steps:
       - name: Checkout source repository

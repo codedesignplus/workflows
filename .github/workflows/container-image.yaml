@@ -18,6 +18,10 @@ on:
         required: false
         type: boolean
         default: true
+      runner:
+        required: false
+        type: string
+        default: ubuntu-latest
 
 env:
   IS_RELEASE: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
@@ -27,8 +31,8 @@ env:
 jobs:
   create-image:
     name: Create Image
-    environment: ${{ inputs.environment }} 
-    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    runs-on: ${{ inputs.runner }}
     permissions:
       contents: write
       packages: write

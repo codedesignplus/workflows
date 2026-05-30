@@ -10,7 +10,11 @@ on:
       environment:
         required: true
         type: string
-      
+      runner:
+        required: false
+        type: string
+        default: ubuntu-latest
+
   workflow_dispatch:
 
 env:
@@ -25,9 +29,9 @@ permissions:
 
 jobs:
   build:
-    name: Build .Net     
-    environment: ${{ inputs.environment }} 
-    runs-on: ubuntu-latest
+    name: Build .Net
+    environment: ${{ inputs.environment }}
+    runs-on: ${{ inputs.runner }}
     
     steps:
       - name: Checkout
