@@ -105,12 +105,14 @@ jobs:
             echo "Please configure KUBE_CONFIG in repository Settings → Environments → ${{ inputs.environment }}"
             exit 1
           fi
+          echo "✅ KUBE_CONFIG is configured"
+
           if [ -z "${{ secrets.VAULT_TOKEN }}" ]; then
-            echo "❌ ERROR: VAULT_TOKEN secret is missing for ${{ inputs.environment }} environment"
-            echo "Please configure VAULT_TOKEN in repository Settings → Environments → ${{ inputs.environment }}"
-            exit 1
+            echo "⚠️  WARNING: VAULT_TOKEN secret is not configured for ${{ inputs.environment }} environment"
+            echo "If your application uses Vault, please configure VAULT_TOKEN in Settings → Environments → ${{ inputs.environment }}"
+          else
+            echo "✅ VAULT_TOKEN is configured"
           fi
-          echo "✅ All required secrets are configured"
 
       - name: Create Kubeconfig
         run: |
