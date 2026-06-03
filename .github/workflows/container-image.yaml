@@ -50,7 +50,7 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
-    - name: SemVer 
+    - name: SemVer
       id: git-semver
       uses: codedesignplus/semver-git-version@v0.1.10
       with:
@@ -59,11 +59,12 @@ jobs:
         release-candidate-branch: 'rc'
         beta-branch: 'dev'
         major-identifier: 'breaking'
-        minor-identifier: 'feat' 
+        minor-identifier: 'feat'
         prefix: 'v'
         dir-affected: ./
         previous-version: true
         new-version: true
+        initial-version: '0.1.0'
 
     - name: Print Output
       id: output
@@ -113,7 +114,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-    - name: Build & Push | Docker Hub - Rest API 
+    - name: Build & Push | Docker Hub - Rest API
       uses: docker/build-push-action@v6
       if: env.REST_EXISTS == 'true' && inputs.publish-to-docker-hub
       with:
@@ -121,7 +122,11 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
+        tags: |
+          ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
+          ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Build & Push | Docker Hub - Worker
       uses: docker/build-push-action@v6
@@ -131,7 +136,11 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
+        tags: |
+          ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
+          ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Build & Push | Docker Hub - gRpc
       uses: docker/build-push-action@v6
@@ -141,38 +150,11 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
-
-        
-    - name: Build & Push | Docker Hub - Rest API 
-      uses: docker/build-push-action@v6
-      if: env.REST_EXISTS == 'true' && inputs.publish-to-docker-hub
-      with:
-        context: .
-        builder: ${{ steps.buildx.outputs.name }}
-        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
-        push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:latest
-
-    - name: Build & Push | Docker Hub - Worker
-      uses: docker/build-push-action@v6
-      if: env.WORKER_EXISTS == 'true' && inputs.publish-to-docker-hub
-      with:
-        context: .
-        builder: ${{ steps.buildx.outputs.name }}
-        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
-        push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:latest
-
-    - name: Build & Push | Docker Hub - gRpc
-      uses: docker/build-push-action@v6
-      if: env.GRPC_EXISTS == 'true' && inputs.publish-to-docker-hub
-      with:
-        context: .
-        builder: ${{ steps.buildx.outputs.name }}
-        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
-        push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:latest
+        tags: |
+          ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
+          ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
 
 
@@ -192,46 +174,11 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
-    
-    - name: Build & Push | GitHub Packages - Worker
-      uses: docker/build-push-action@v6
-      if: env.WORKER_EXISTS == 'true' && inputs.publish-to-github-packages
-      with:
-        context: .
-        builder: ${{ steps.buildx.outputs.name }}
-        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
-        push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
-    
-    - name: Build & Push | GitHub Packages - gRpc
-      uses: docker/build-push-action@v6
-      if: env.GRPC_EXISTS == 'true' && inputs.publish-to-github-packages
-      with:
-        context: .
-        builder: ${{ steps.buildx.outputs.name }}
-        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
-        push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
-
-    
-    - name: Log in to GitHub Packages
-      uses: docker/login-action@v3
-      if: inputs.publish-to-github-packages
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Build & Push | GitHub Packages - Rest API
-      uses: docker/build-push-action@v6
-      if: env.REST_EXISTS == 'true' && inputs.publish-to-github-packages
-      with:
-        context: .
-        builder: ${{ steps.buildx.outputs.name }}
-        file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.Rest/Dockerfile"
-        push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:latest
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
+          ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Build & Push | GitHub Packages - Worker
       uses: docker/build-push-action@v6
@@ -241,7 +188,11 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.AsyncWorker/Dockerfile"
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:latest
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
+          ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Build & Push | GitHub Packages - gRpc
       uses: docker/build-push-action@v6
@@ -251,4 +202,8 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         file: "${{ github.workspace }}/src/entrypoints/${{inputs.project-name}}.gRpc/Dockerfile"
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:latest
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
+          ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

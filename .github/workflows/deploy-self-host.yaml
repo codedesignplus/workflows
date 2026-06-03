@@ -51,6 +51,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Validate Runner Prerequisites
+        run: |
+          echo "Validating runner has required tools..."
+          command -v kubectl >/dev/null 2>&1 || { echo "❌ ERROR: kubectl not found on runner"; exit 1; }
+          command -v helm >/dev/null 2>&1 || { echo "❌ ERROR: helm not found on runner"; exit 1; }
+          command -v docker >/dev/null 2>&1 || { echo "❌ ERROR: docker not found on runner"; exit 1; }
+          echo "✅ All required tools (kubectl, helm, docker) are available"
+
       - name: SemVer
         id: git-semver
         uses: codedesignplus/semver-git-version@v0.1.10
@@ -65,6 +73,7 @@ jobs:
           dir-affected: ./
           previous-version: true
           new-version: true
+          initial-version: '0.1.0'
 
       - name: Print Output
         id: output
@@ -88,6 +97,21 @@ jobs:
       #     admin: 'true'
       #     use-kubelogin: 'true'
 
+      - name: Validate Secrets
+        run: |
+          echo "Validating required secrets for deployment..."
+          if [ -z "${{ secrets.KUBE_CONFIG }}" ]; then
+            echo "❌ ERROR: KUBE_CONFIG secret is missing for ${{ inputs.environment }} environment"
+            echo "Please configure KUBE_CONFIG in repository Settings → Environments → ${{ inputs.environment }}"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VAULT_TOKEN }}" ]; then
+            echo "❌ ERROR: VAULT_TOKEN secret is missing for ${{ inputs.environment }} environment"
+            echo "Please configure VAULT_TOKEN in repository Settings → Environments → ${{ inputs.environment }}"
+            exit 1
+          fi
+          echo "✅ All required secrets are configured"
+
       - name: Create Kubeconfig
         run: |
           echo "1. Create Kubeconfig"
@@ -97,6 +121,23 @@ jobs:
       
       - name: Install Helm
         uses: azure/setup-helm@v4.3.0
+
+      - name: Validate Helm Charts
+        run: |
+          echo "Validating Helm chart directories..."
+          if [ "${{ inputs.enable-rest }}" == "true" ] && [ ! -d "./charts/${{ inputs.microservice-name }}-rest" ]; then
+            echo "❌ ERROR: enable-rest is true but ./charts/${{ inputs.microservice-name }}-rest directory does not exist"
+            exit 1
+          fi
+          if [ "${{ inputs.enable-grpc }}" == "true" ] && [ ! -d "./charts/${{ inputs.microservice-name }}-grpc" ]; then
+            echo "❌ ERROR: enable-grpc is true but ./charts/${{ inputs.microservice-name }}-grpc directory does not exist"
+            exit 1
+          fi
+          if [ "${{ inputs.enable-worker }}" == "true" ] && [ ! -d "./charts/${{ inputs.microservice-name }}-worker" ]; then
+            echo "❌ ERROR: enable-worker is true but ./charts/${{ inputs.microservice-name }}-worker directory does not exist"
+            exit 1
+          fi
+          echo "✅ All enabled Helm charts exist"
 
       # Helm - gRPC 
       - name: Helm - gRPC
@@ -108,7 +149,7 @@ jobs:
           echo "2. Linting gRPC Chart"
           helm lint ./charts/${{ inputs.microservice-name }}-grpc
 
-          echo "3. Template gRPC Chart"
+          echo "3. Deploy gRPC Chart"
           helm upgrade --install ${{ inputs.microservice-name }}-grpc ./charts/${{ inputs.microservice-name }}-grpc \
             --namespace ${{ vars.NAMESPACE }} \
             --values ./charts/${{ inputs.microservice-name }}-grpc/${{inputs.environment}}.yaml \
@@ -116,7 +157,9 @@ jobs:
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
             --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
             --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
-            --create-namespace
+            --create-namespace \
+            --atomic \
+            --timeout 5m
 
       # Helm - Rest
       - name: Helm - Rest
@@ -128,7 +171,7 @@ jobs:
           echo "2. Linting Rest Chart"
           helm lint ./charts/${{ inputs.microservice-name }}-rest
 
-          echo "3. Template Rest Chart"
+          echo "3. Deploy Rest Chart"
           helm upgrade --install ${{ inputs.microservice-name }}-rest ./charts/${{ inputs.microservice-name }}-rest \
             --namespace ${{ vars.NAMESPACE }} \
             --values ./charts/${{ inputs.microservice-name }}-rest/${{inputs.environment}}.yaml \
@@ -136,7 +179,9 @@ jobs:
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
             --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
             --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
-            --create-namespace
+            --create-namespace \
+            --atomic \
+            --timeout 5m
 
       # Helm - Worker
       - name: Helm - Dependency Update Worker
@@ -148,7 +193,7 @@ jobs:
           echo "2. Linting Worker Chart"
           helm lint ./charts/${{ inputs.microservice-name }}-worker
           
-          echo "3. Template Worker Chart"
+          echo "3. Deploy Worker Chart"
           helm upgrade --install ${{ inputs.microservice-name }}-worker ./charts/${{ inputs.microservice-name }}-worker \
             --namespace ${{ vars.NAMESPACE }} \
             --values ./charts/${{ inputs.microservice-name }}-worker/${{inputs.environment}}.yaml \
@@ -156,4 +201,6 @@ jobs:
             --set ms-base.image.tag=${{ steps.git-semver.outputs.new-version-prefix }} \
             --set ms-base.vault.token=${{secrets.VAULT_TOKEN}} \
             --set ms-base.vault.server=${{vars.VAULT_SERVER}} \
-            --create-namespace
+            --create-namespace \
+            --atomic \
+            --timeout 5m
