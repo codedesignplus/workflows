@@ -1,0 +1,35 @@
+name: Money Guardrails
+
+# Valida el estandar de dinero y tasas sobre el repo que llama.
+#
+# Existe como workflow aparte y no como un paso de build-microservice porque este ultimo lo
+# consumen repos fuera de esta plataforma, y una regla nueva no deberia romperles el build sin
+# que lo hayan pedido. Cada microservicio se suscribe agregando un job a su ci.yaml.
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: false
+        type: string
+        default: ubuntu-latest
+
+  workflow_dispatch:
+
+jobs:
+  guardrails:
+    name: Estandar de dinero
+    runs-on: ${{ inputs.runner }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout workflows
+        uses: actions/checkout@v4
+        with:
+          repository: codedesignplus/workflows
+          path: .guardrails
+
+      - name: Validar estandar de dinero
+        run: bash .guardrails/scripts/money-guardrails.sh .
