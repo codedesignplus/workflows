@@ -142,9 +142,17 @@ report "Tipos *Dto con dinero en un command expuesto por REST" \
   "$dto_hits"
 
 # Los VOs de dominio guardan unidades menores y puntos base: imposible enviarles decimales.
+#
+# El patron no puede anclarse a inicio de linea. Un record posicional de una sola linea
+#   public record Comando(Guid Id, List<UnitAssessment>? Unidades = null) : IRequest;
+# empieza por "public", asi que el ancla no casaba y dejaba pasar CUALQUIER VO escrito de esa forma, no
+# solo este. Se busca el tipo alla donde este, precedido de un delimitador de parametro o de propiedad,
+# que es lo que distingue "List<Money> X" de un "MoneyInput" perfectamente valido.
+VO_TYPES='Money|TaxDefinition|WithholdingDefinition|PenaltyRule|LeaseTerms|UnitAssessment'
+
 report "VOs de dominio en un command expuesto por REST" \
   "Estos commands los llena una persona: deben recibir *Input en unidad mayor y porcentaje." \
-  "$(grep_rest_commands '^\s*(List<)?(Money|TaxDefinition|WithholdingDefinition|PenaltyRule|LeaseTerms)[>?]*\s+[A-Za-z]')"
+  "$(grep_rest_commands "(^|[(,[:space:]])(List<)?($VO_TYPES)[>?]*[[:space:]]+[A-Za-z]")"
 
 # Un importe long obliga al cliente a hacer la conversion, que es justo lo que no debe hacer.
 report "Importes long en un command expuesto por REST" \
