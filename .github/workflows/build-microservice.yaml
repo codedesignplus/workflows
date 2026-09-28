@@ -45,6 +45,17 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
+      - name: Guardrail | nuget.config without credentials
+        run: |
+          # Un nuget.config commiteado no lleva credenciales: el token del feed privado llega por el
+          # secreto NUGET_PACKAGES_TOKEN. Solo se admite una referencia a variable (%VAR%).
+          found=$(find . -iname nuget.config -not -path "*/node_modules/*" -print0             | xargs -0 -r grep -liE 'key="(ClearTextPassword|Password)"[[:space:]]+value="[^%"]' || true)
+          if [ -n "$found" ]; then
+            echo "::error::nuget.config con credenciales escritas; usa el secreto NUGET_PACKAGES_TOKEN:"
+            echo "$found"
+            exit 1
+          fi
+
       - name: Install Dependencies
         env:
           NUGET_PACKAGES_USER: ${{ github.actor }}
