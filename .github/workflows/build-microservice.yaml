@@ -49,7 +49,14 @@ jobs:
         env:
           NUGET_PACKAGES_USER: ${{ github.actor }}
           NUGET_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: dotnet restore 
+          NUGET_FEED_TOKEN: ${{ secrets.NUGET_PACKAGES_TOKEN }}
+        run: |
+          # Credencial del feed privado "github"; solo se exporta si el secreto existe, para no pisar
+          # la de un nuget.config que todavia la tenga.
+          if [ -n "$NUGET_FEED_TOKEN" ]; then
+            export NuGetPackageSourceCredentials_github="Username=${{ github.actor }};Password=$NUGET_FEED_TOKEN"
+          fi
+          dotnet restore
 
       - name: Build
         run: dotnet build --configuration Release
