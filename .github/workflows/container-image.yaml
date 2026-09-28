@@ -45,11 +45,6 @@ jobs:
       with:
         fetch-depth: 0 
 
-    - name: Setup .NET SDK 🚧
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
-
     - name: SemVer
       id: git-semver
       uses: codedesignplus/semver-git-version@v0.1.10
@@ -104,8 +99,10 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v3
       with:
-        buildkitd-flags: --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
-        driver-opts: network=host
+        # El BuildKit del demonio del runner conserva capas base, restore y compilacion dentro
+        # del job y, en runners self-hosted, entre jobs. Exportar la cache a GitHub Actions
+        # costaba ~100 s por imagen para ahorrar ~16 s de descarga de la imagen base.
+        driver: docker
 
     - name: Log in to Docker Hub
       if: inputs.publish-to-docker-hub
@@ -125,8 +122,6 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
           ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-rest:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Build & Push | Docker Hub - Worker
       uses: docker/build-push-action@v6
@@ -139,8 +134,6 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
           ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-worker:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Build & Push | Docker Hub - gRpc
       uses: docker/build-push-action@v6
@@ -153,8 +146,6 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
           ${{ secrets.DOCKER_HUB_USERNAME }}/${{inputs.microservice-name}}-grpc:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
 
 
@@ -177,8 +168,6 @@ jobs:
         tags: |
           ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:${{ steps.git-semver.outputs.new-version-prefix }}
           ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-rest:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Build & Push | GitHub Packages - Worker
       uses: docker/build-push-action@v6
@@ -191,8 +180,6 @@ jobs:
         tags: |
           ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:${{ steps.git-semver.outputs.new-version-prefix }}
           ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-worker:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Build & Push | GitHub Packages - gRpc
       uses: docker/build-push-action@v6
@@ -205,5 +192,7 @@ jobs:
         tags: |
           ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:${{ steps.git-semver.outputs.new-version-prefix }}
           ghcr.io/${{ github.repository_owner }}/${{inputs.microservice-name}}-grpc:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+
+    - name: Prune build cache
+      if: always()
+      run: docker builder prune --force --filter until=168h
