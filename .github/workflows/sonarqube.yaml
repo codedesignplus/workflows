@@ -40,6 +40,13 @@ jobs:
         with:
           fetch-depth: 0 
 
+      - name: Isolate the NuGet HTTP cache per job
+        # Los runners self-hosted comparten usuario y, con él, ~/.local/share/NuGet/http-cache: NuGet guarda la lista
+        # de versiones de cada paquete 30 minutos, y un job que corría justo después de publicar una beta no la veía
+        # (NU1102 «Nearest version» con la anterior). Cada job usa su propia caché en RUNNER_TEMP.
+        shell: bash
+        run: echo "NUGET_HTTP_CACHE_PATH=$RUNNER_TEMP/nuget-http-cache" >> "$GITHUB_ENV"
+
       - name: Setup .NET SDK 🚧
         uses: actions/setup-dotnet@v4
         with:
