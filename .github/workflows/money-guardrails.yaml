@@ -1,6 +1,6 @@
 name: Money Guardrails
 
-# Valida el estandar de dinero y tasas sobre el repo que llama.
+# Valida el estandar de dinero y tasas sobre el repo que llama, y que fuera de ms-filestorage el blob solo se lea.
 #
 # Existe como workflow aparte y no como un paso de build-microservice porque este ultimo lo
 # consumen repos fuera de esta plataforma, y una regla nueva no deberia romperles el build sin
@@ -33,3 +33,8 @@ jobs:
 
       - name: Validar estandar de dinero
         run: bash .guardrails/scripts/money-guardrails.sh .
+
+      # Va aqui y no en un workflow propio porque este es el que ya llaman los 35 microservicios: uno nuevo obligaba
+      # a tocar sus 35 ci.yml. Regla 56 de rules/ y pendings/260.
+      - name: Validar que los archivos pasan por ms-filestorage
+        run: python3 .guardrails/scripts/file-storage-guardrails.py .
