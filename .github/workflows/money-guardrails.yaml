@@ -38,3 +38,8 @@ jobs:
       # a tocar sus 35 ci.yml. Regla 56 de rules/ y pendings/260.
       - name: Validar que los archivos pasan por ms-filestorage
         run: python3 .guardrails/scripts/file-storage-guardrails.py .
+
+      # Mismo motivo: un worker con jobs que no monta UseHangfireDashboard compila y arranca, pero sus jobs nunca se
+      # registran ni corren. Regla 58 de rules/ y pendings/271.
+      - name: Validar que los jobs recurrentes se registran en Hangfire
+        run: python3 .guardrails/scripts/hangfire-guardrails.py .
