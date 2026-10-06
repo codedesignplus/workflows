@@ -43,3 +43,8 @@ jobs:
       # registran ni corren. Regla 58 de rules/ y pendings/271.
       - name: Validar que los jobs recurrentes se registran en Hangfire
         run: python3 .guardrails/scripts/hangfire-guardrails.py .
+
+      # Mismo motivo: el CVV de la tarjeta se guardaba en claro en tres micros porque el objeto de valor del SDK lo trae
+      # para la pasarela, y PCI DSS no deja conservarlo. pendings/322.
+      - name: Validar que el CVV no se guarda
+        run: python3 .guardrails/scripts/card-data-guardrails.py .
