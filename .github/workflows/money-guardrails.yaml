@@ -48,3 +48,8 @@ jobs:
       # para la pasarela, y PCI DSS no deja conservarlo. pendings/322.
       - name: Validar que el CVV no se guarda
         run: python3 .guardrails/scripts/card-data-guardrails.py .
+
+      # Mismo motivo: dos consumidores que reemplazan el mismo documento se borran sin un error; el panel perdio 88 de 240
+      # cuotas asi. Solo aplica a los micros con .concurrency-guardrails en la raiz. Regla 59 de rules/ y pendings/346.
+      - name: Validar que los agregados compartidos se versionan
+        run: python3 .guardrails/scripts/concurrency-guardrails.py .
