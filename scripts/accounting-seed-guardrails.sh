@@ -11,8 +11,10 @@
 #
 #      Y al reves: el seed no guarda nombres que ms-administration ya no siembra.
 #
-#   2. Todo producto con regla sembrada existe en KappaliProducts, el catalogo compartido del SDK.
-#      Un id escrito a mano en el JSON es una cuarta copia de un numero que ya vivia en dos sitios.
+#   2. Todo producto con regla sembrada existe en KappaliProducts, el catalogo compartido del SDK, o en
+#      AccountingProducts de ms-accounting, el de los productos que nadie factura (el cruce en efectivo, la
+#      anulacion de un egreso de otro año). Un id escrito a mano en el JSON es una copia mas de un numero que
+#      ya vivia en otro sitio.
 #
 #   3. Cada regla de retencion trae sus DOS cuentas, y cada una en su lado del balance. Lo que la
 #      copropiedad retiene es un pasivo con la DIAN; lo que le retienen a ella es un anticipo a su favor.
@@ -31,11 +33,12 @@ aruta() {
 SEED="$RAIZ/Kappali.Net.Microservice.Accounting/src/entrypoints/Kappali.Net.Microservice.Accounting.AsyncWorker/Seeds/seed-co.json"
 PROVISIONER="$RAIZ/Kappali.Net.Microservice.Administration/src/entrypoints/Kappali.Net.Microservice.Administration.AsyncWorker/Seeds/BudgetCategoryProvisioner.cs"
 CATALOGO="$RAIZ/Kappali.Net.Sdk/packages/Kappali.Net.Common/src/Kappali.Net.Common/Products/KappaliProducts.cs"
+CONTABLES="$RAIZ/Kappali.Net.Microservice.Accounting/src/domain/Kappali.Net.Microservice.Accounting.Domain/ServiceDomain/AccountingProducts.cs"
 
 ROJO=$'\033[31m'; VERDE=$'\033[32m'; FIN=$'\033[0m'
 FALLOS=0
 
-for archivo in "$SEED" "$PROVISIONER" "$CATALOGO"; do
+for archivo in "$SEED" "$PROVISIONER" "$CATALOGO" "$CONTABLES"; do
   if [ ! -f "$archivo" ]; then
     echo "${ROJO}No se encuentra $archivo${FIN}"
     exit 2
@@ -44,6 +47,7 @@ done
 
 SEED_W="$(aruta "$SEED")"
 CATALOGO_W="$(aruta "$CATALOGO")"
+CONTABLES_W="$(aruta "$CONTABLES")"
 
 # Un guardrail que se cae y responde "todo bien" es peor que no tenerlo: pasaba justo aqui, porque una lista
 # vacia por error de python es indistinguible de una lista vacia por estar todo correcto.
@@ -115,15 +119,15 @@ fi
 HUERFANOS=$(correr_python "
 import json, re
 seed = json.load(open(r'''$SEED_W''', encoding='utf-8'))
-catalogo = open(r'''$CATALOGO_W''', encoding='utf-8').read()
+catalogo = open(r'''$CATALOGO_W''', encoding='utf-8').read() + open(r'''$CONTABLES_W''', encoding='utf-8').read()
 ids = {g.lower() for g in re.findall(r'Guid\.Parse\(\"([0-9a-fA-F-]+)\"\)', catalogo)}
 print('\n'.join(r['productName'] for r in seed['accountingRules'] if r['productId'].lower() not in ids))
 ")
 
 if [ -n "$HUERFANOS" ]; then
-  echo "${ROJO}Reglas del seed cuyo producto no esta en KappaliProducts:${FIN}"
+  echo "${ROJO}Reglas del seed cuyo producto no esta en KappaliProducts ni en AccountingProducts:${FIN}"
   sed 's/^/   /' <<< "$HUERFANOS"
-  echo "   El id se escribio a mano en el JSON: es una copia mas de un numero que ya vive en el SDK."
+  echo "   El id se escribio a mano en el JSON: es una copia mas de un numero que ya vive en el SDK o en ms-accounting."
   FALLOS=$((FALLOS+1))
 else
   echo "${VERDE}Todos los productos con regla estan en el catalogo compartido.${FIN}"
