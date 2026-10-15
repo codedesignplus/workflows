@@ -37,6 +37,12 @@ RE_PROP = re.compile(r'\bpublic\s+(?:(?:required|virtual|override|new|static)\s+
 # Lo que pone DomainEvent en el JSON: lo trae todo evento, lo declare o no.
 BASE_DOMAIN_EVENT = {"aggregateid", "eventid", "occurredat", "metadata", "eventtype"}
 
+# Bases del SDK que no estan en ningun micro: lo que anaden al JSON por encima de DomainEvent. Sin esto, las fotos de
+# proyeccion (pendings/380) quedaban «sin comparar»: su publicador hereda de SnapshotDomainEvent, que vive en el SDK.
+BASES_DEL_SDK = {
+    "SnapshotDomainEvent": {"tenant", "requestid", "requestedby"},
+}
+
 
 def opciones(micro):
     """AppName y Business del microservicio, de su appsettings."""
@@ -147,6 +153,8 @@ def campos_publicados(clase, indice):
         base = actual["base"]
         if base in (None, "DomainEvent"):
             return campos | BASE_DOMAIN_EVENT
+        if base in BASES_DEL_SDK:
+            return campos | BASES_DEL_SDK[base] | BASE_DOMAIN_EVENT
         actual = indice.get(base)
     return None
 
