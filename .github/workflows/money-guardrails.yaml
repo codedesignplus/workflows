@@ -59,3 +59,9 @@ jobs:
       # crear la regla estan en scripts/system-user-guardrails.exceptions. Regla 64 de rules/ y pendings/493.
       - name: Validar que lo que hace el sistema se firma con SystemUser
         run: python3 .guardrails/scripts/system-user-guardrails.py .
+
+      # Mismo motivo: un campo retirado de una clase persistida se quedaba en el codigo como sumidero de solo lectura
+      # (BsonValue? Legacy...) para no limpiar la base, y nadie lo retiraba despues. Se limpia con $unset al publicar.
+      # Regla 65 de rules/.
+      - name: Validar que no queda codigo de retrocompatibilidad de datos
+        run: python3 .guardrails/scripts/legacy-fields-guardrails.py .
