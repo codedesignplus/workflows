@@ -60,53 +60,6 @@ src/domain/Kappali.Net.Microservice.CommunityLife.Infrastructure/Seeds/Regulatio
 src/entrypoints/Kappali.Net.Microservice.CommunityLife.AsyncWorker/Consumers/AssemblyProjectionHandlers.cs | ?? (string.IsNullOrWhiteSpace(data.Title) ? null! : AssemblyProjectionAggregate.Create(data.AggregateId, data.Title, heldOn, data.Tenant, Guid.Empty)),
 src/entrypoints/Kappali.Net.Microservice.CommunityLife.AsyncWorker/Consumers/AssemblyProjectionHandlers.cs | ?? AssemblyProjectionAggregate.Create(snapshot.AggregateId, snapshot.Title, snapshot.ScheduledDate, snapshot.Tenant, Guid.Empty),
 
-# Kappali.Net.Microservice.Expenses: pendiente de migrar a SystemUser (pendings/493)
-src/entrypoints/Kappali.Net.Microservice.Expenses.AsyncWorker/Consumers/AssemblyProjectionHandlers.cs | ?? (string.IsNullOrWhiteSpace(data.Title) ? null! : AssemblyProjectionAggregate.Create(data.AggregateId, data.Title, heldOn, data.Tenant, Guid.Empty)),
-src/entrypoints/Kappali.Net.Microservice.Expenses.AsyncWorker/Consumers/AssemblyProjectionHandlers.cs | ?? AssemblyProjectionAggregate.Create(snapshot.AggregateId, snapshot.Title, snapshot.ScheduledDate, snapshot.Tenant, Guid.Empty),
-src/entrypoints/Kappali.Net.Microservice.Expenses.AsyncWorker/Notifications/ExpenseNotices.cs | public static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-
-# Kappali.Net.Microservice.FrontDesk: pendiente de migrar a SystemUser (pendings/493)
-src/domain/Kappali.Net.Microservice.FrontDesk.Application/FrontDeskNotices.cs | public static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-src/domain/Kappali.Net.Microservice.FrontDesk.Domain/ResidentProjectionAggregate.cs | CreatedBy = Guid.Empty,
-src/domain/Kappali.Net.Microservice.FrontDesk.Domain/ResidentProjectionAggregate.cs | UpdatedBy = Guid.Empty;
-src/entrypoints/Kappali.Net.Microservice.FrontDesk.AsyncWorker/Consumers/ProvisionTenantHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-
-# Kappali.Net.Microservice.Governance: pendiente de migrar a SystemUser (pendings/493)
-src/domain/Kappali.Net.Microservice.Governance.Application/Webhook/Commands/ProcessRecordingWebhook/ProcessRecordingWebhookCommandHandler.cs | meeting.SetRecordingUrl(request.ContentLocation, Guid.Empty);
-src/domain/Kappali.Net.Microservice.Governance.Domain/CouncilPendingTopicAggregate.cs | var topic = Create(id, tenant, councilId, PendingTopicType.ContractApproval, title, description, null, null, null, null, null, Guid.Empty);
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Consumers/CouncilDecisionTopicHandlers.cs | await CouncilDecisionTopics.ResolveAsync(open, Guid.Empty, data.OccurredAt, topics, pubsub, token);
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Consumers/CouncilDecisionTopicHandlers.cs | await CouncilDecisionTopics.ResolveAsync(open, data.RejectedBy ?? Guid.Empty, data.OccurredAt, topics, pubsub, token);
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Consumers/ExpenseExcessAmountAlertHandler.cs | Guid.Empty
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Consumers/InfractionEscalatedToCouncilHandler.cs | Guid.Empty
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Consumers/PqrsEscalatedToCouncilHandler.cs | Guid.Empty
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Consumers/PqrsTopicHandlers.cs | await CouncilDecisionTopics.ResolveAsync(open, Guid.Empty, data.OccurredAt, topics, pubsub, token);
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Consumers/PqrsTopicHandlers.cs | await CouncilDecisionTopics.ResolveAsync(open, data.ResolvedBy ?? Guid.Empty, data.OccurredAt, topics, pubsub, token);
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Consumers/QuotationBatchSubmittedHandler.cs | Guid.Empty
-src/entrypoints/Kappali.Net.Microservice.Governance.AsyncWorker/Notifications/GoverningBodyNotices.cs | public static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-
-# Kappali.Net.Microservice.Invoicing: pendiente de migrar a SystemUser (pendings/493)
-src/domain/Kappali.Net.Microservice.Invoicing.Application/AccountStatement/Commands/GenerateMonthlyStatements/GenerateMonthlyStatementsCommandHandler.cs | Guid.Empty
-src/domain/Kappali.Net.Microservice.Invoicing.Application/FinancialDocument/Commands/CreditUnstartedMonths/CreditUnstartedMonthsCommandHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-src/domain/Kappali.Net.Microservice.Invoicing.Application/FinancialDocument/Commands/MarkOverdueDocuments/MarkOverdueDocumentsCommandHandler.cs | sentBy: Guid.Empty,
-src/domain/Kappali.Net.Microservice.Invoicing.Application/FinancialDocument/Commands/RecordFailedPayment/RecordFailedPaymentCommandHandler.cs | financialDocument.RecordFailedPayment(request.PaymentId, request.Reason, Guid.Empty);
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Consumers/ApplyCreditBalanceOnIssuedHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Consumers/AssemblySnapshotHandler.cs | ?? AssemblyProjectionAggregate.Create(snapshot.AggregateId, snapshot.Title, snapshot.ScheduledDate, snapshot.Tenant, Guid.Empty),
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Consumers/NotifyDocumentIssuedHandler.cs | sentBy: Guid.Empty,
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Consumers/NotifyManualPaymentHandler.cs | sentBy: Guid.Empty,
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Consumers/ParkingRaffleAssignmentReleasedHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Consumers/ParkingRaffleChargeRequiredHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Consumers/ProvisionProductsHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Notifications/InvoicingNotices.cs | sentBy: Guid.Empty,
-src/entrypoints/Kappali.Net.Microservice.Invoicing.AsyncWorker/Seeds/ProductSeedService.cs | private static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-
-# Kappali.Net.Microservice.LeaseAgreements: pendiente de migrar a SystemUser (pendings/493)
-src/entrypoints/Kappali.Net.Microservice.LeaseAgreements.AsyncWorker/Consumers/DocumentOverdueHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-src/entrypoints/Kappali.Net.Microservice.LeaseAgreements.AsyncWorker/Consumers/DocumentPaidHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
-# Kappali.Net.Microservice.Movings: pendiente de migrar a SystemUser (pendings/493)
-src/entrypoints/Kappali.Net.Microservice.Movings.AsyncWorker/Consumers/DocumentVoidedHandler.cs | private static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-src/entrypoints/Kappali.Net.Microservice.Movings.AsyncWorker/Consumers/MovingNoticeHandlers.cs | sentBy: Guid.Empty,
-
 # Kappali.Net.Microservice.Organization: pendiente de migrar a SystemUser (pendings/493)
 src/domain/Kappali.Net.Microservice.Organization.Application/Organization/Services/CommunityLifeSettingsProvisioner.cs | public static readonly Guid SystemUserId = Guid.Parse("10000000-0000-0000-0000-000000000001");
 src/entrypoints/Kappali.Net.Microservice.Organization.AsyncWorker/Consumers/InitialOwner/NotifyMajorityAlienatedHandler.cs | Guid.Empty,
