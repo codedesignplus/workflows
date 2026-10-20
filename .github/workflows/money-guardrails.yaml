@@ -53,3 +53,9 @@ jobs:
       # cuotas asi. Solo aplica a los micros con .concurrency-guardrails en la raiz. Regla 59 de rules/ y pendings/346.
       - name: Validar que los agregados compartidos se versionan
         run: python3 .guardrails/scripts/concurrency-guardrails.py .
+
+      # Mismo motivo: cada micro firmaba lo que hace solo con un usuario distinto (10000000-...-0001, 00000000-...-0001 o
+      # Guid.Empty, que se confunde con un dato que falta). Solo aplica a los micros de Kappali; las firmas que habia al
+      # crear la regla estan en scripts/system-user-guardrails.exceptions. Regla 64 de rules/ y pendings/493.
+      - name: Validar que lo que hace el sistema se firma con SystemUser
+        run: python3 .guardrails/scripts/system-user-guardrails.py .
