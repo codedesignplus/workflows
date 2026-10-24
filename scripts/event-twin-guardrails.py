@@ -201,8 +201,6 @@ CAMPOS_CONOCIDOS = {
     "kappali.ms-expenses.v1.expenseaggregate.expensepaiddomainevent::paymentdate": "pendings/325",
     # Defectos reales que destapo esta comprobacion el 2026-10-13 (pendings/207). Son de otros modulos y estan por
     # archivar como planes propios: no se arreglan desde el de imprevistos. Cada uno se borra de aqui al arreglarse.
-    "kappali.ms-governance.v1.councilmeetingaggregate.councilquotationselectioncloseddomainevent::budgetcategory": "por archivar: cotizaciones del consejo",
-    "kappali.ms-governance.v1.councilmeetingaggregate.councilquotationselectioncloseddomainevent::closedby": "por archivar: cotizaciones del consejo, aprueba con Guid.Empty",
     "kappali.ms-parking.v1.parkingaggregate.parkingcreateddomainevent::type": "por archivar: el tipo de parqueadero no viaja",
     "kappali.ms-parking.v1.parkingaggregate.parkingupdateddomainevent::type": "por archivar: el tipo de parqueadero no viaja",
     "kappali.ms-residents.v1.residentaggregate.statusupdateddomainevent::isactive": "por archivar: el estado del residente no viaja a parqueaderos",
