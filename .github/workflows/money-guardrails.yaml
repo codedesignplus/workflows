@@ -65,3 +65,9 @@ jobs:
       # Regla 65 de rules/.
       - name: Validar que no queda codigo de retrocompatibilidad de datos
         run: python3 .guardrails/scripts/legacy-fields-guardrails.py .
+
+      # Mismo motivo: la bandeja descarta un aviso con un id que ya tiene, y dos avisos del mismo evento salian con el
+      # EventId tal cual: la administracion no recibia «Impugnacion radicada». Solo aplica a los micros de Kappali.
+      # pendings/623.
+      - name: Validar que dos avisos del mismo evento no comparten id
+        run: python3 .guardrails/scripts/notification-id-guardrails.py .
