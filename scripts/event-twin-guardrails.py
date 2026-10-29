@@ -22,7 +22,10 @@ quedo con la categoria de imprevistos en Guid.Empty (pendings/207). El topic coi
 Se comprueba cada parametro del constructor y cada propiedad del gemelo contra las propiedades publicas del
 evento publicado, incluidas las de sus clases base y las de DomainEvent.
 
-    python event-twin-guardrails.py [raiz]
+Se corre desde la raiz del espacio de trabajo, que es donde se ven todos los micros. Con la raiz de un solo micro
+no hay nada que comparar y el script no da veredicto (pendings/695).
+
+    python workflows/scripts/event-twin-guardrails.py .
 """
 import glob, json, os, re, sys
 
@@ -179,6 +182,18 @@ for micro, (app, bus) in micros.items():
 # los gemelos viven siempre en entrypoints.
 publicados = {e["topic"]: e for e in todos if e["propio"]}
 
+# Sin gemelos o sin publicadores no hay nada que comparar, y un veredicto sobre nada miente: corrido con la raiz de
+# un solo micro daba 0 gemelos revisados y aun asi todas las excepciones de CAMPOS_CONOCIDOS por obsoletas
+# (pendings/695). Una falsa alarma ensena a ignorar el guardarrail. Sale con 2, que no es ni verde ni rojo.
+if not any(not e["propio"] for e in todos) or not publicados:
+    espacio = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    print(f"{AMARILLO}Nada que comparar en '{RAIZ}': {len(micros)} micro(s), "
+          f"{sum(1 for e in todos if not e['propio'])} gemelo(s), {len(publicados)} evento(s) publicados.{RESET}")
+    print("Este guardarrail se corre desde la raiz del espacio de trabajo, donde se ven todos los micros:\n")
+    print(f"    cd {espacio}")
+    print("    python workflows/scripts/event-twin-guardrails.py .")
+    sys.exit(2)
+
 # Deuda ya archivada en pendings/52: consumidores que esperan eventos que nadie llego a construir. Es un
 # problema distinto —ahi el evento no existe, no es que el gemelo lo nombre mal— y esta pendiente de decidir
 # si se borra el consumidor o se escribe el publicador. Se listan uno a uno a proposito: una lista explicita
@@ -255,8 +270,13 @@ for e, pub, faltan in desparejados:
     print(f"{AMARILLO}      no estan en el publicador ({pub['path'].split('/')[-1]}): {', '.join(faltan)}")
     print(f"      llegan siempre por defecto (Guid.Empty, null, 0). Llamelos como las propiedades del publicador.{RESET}\n")
 
-# Una excepcion que ya no casa con nada se borra: o se arreglo el gemelo, o el publicador ya escribe el campo.
-obsoletos = sorted(k for k in CAMPOS_CONOCIDOS if k not in declarados_vistos)
+# Una excepcion que ya no casa con nada se borra: o se arreglo el gemelo, o el publicador ya escribe el campo. Pero
+# solo se puede decir si se escanearon los dos lados: el publicador del topic y algun gemelo que lo lea. Con una vista
+# parcial, lo que no se ve se lista aparte, sin veredicto (pendings/695).
+comparados = {e["topic"] for e in todos if not e["propio"] and e["clase"] is not None and e["topic"] in publicados}
+revisables = [k for k in CAMPOS_CONOCIDOS if k.split("::")[0] in comparados]
+sin_revisar = sorted(k for k in CAMPOS_CONOCIDOS if k not in revisables)
+obsoletos = sorted(k for k in revisables if k not in declarados_vistos)
 sin_motivo = sorted(k for k, v in CAMPOS_CONOCIDOS.items() if not str(v).strip())
 
 for k in obsoletos:
@@ -264,6 +284,12 @@ for k in obsoletos:
 for k in sin_motivo:
     print(f"{ROJO}  EXCEPCION SIN MOTIVO{RESET}  {k}")
 if obsoletos or sin_motivo:
+    print()
+
+if sin_revisar:
+    print(f"{AMARILLO}excepciones sin revisar porque en esta vista falta el gemelo o su publicador ({len(sin_revisar)}):{RESET}")
+    for k in sin_revisar:
+        print(f"    {k}")
     print()
 
 if sin_resolver:
