@@ -146,6 +146,8 @@ d = json.load(open(r'''$SEED_W''', encoding='utf-8'))
 plan = {a['code']: a for a in d['chartOfAccounts']['accounts']}
 fallos = []
 SUFRIDA_POR_TIPO = {'IncomeTax': '135515', 'Vat': '135517', 'Ica': '135518'}
+# Lo que la copropiedad retiene va a la familia de su impuesto (pendings/699): renta a 2365, IVA a 2367 e ICA a 2368.
+PRACTICADA_POR_TIPO = {'IncomeTax': '2365', 'Vat': '2367', 'Ica': '2368'}
 
 for r in d['withholdings']:
     practicada = r.get('accountCode')
@@ -158,7 +160,7 @@ for r in d['withholdings']:
         fallos.append(r['code'] + ': sin la cuenta de lo que le retienen a la copropiedad')
         continue
 
-    for codigo, tipo, familia, lado in ((practicada, 'Liability', '2365', 'practicada'), (sufrida, 'Asset', '1355', 'sufrida')):
+    for codigo, tipo, familia, lado in ((practicada, 'Liability', PRACTICADA_POR_TIPO.get(r.get('kind', 'IncomeTax'), '2365'), 'practicada'), (sufrida, 'Asset', '1355', 'sufrida')):
         cuenta = plan.get(codigo)
 
         if cuenta is None:
