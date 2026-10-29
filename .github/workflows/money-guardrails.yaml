@@ -71,3 +71,8 @@ jobs:
       # pendings/623.
       - name: Validar que dos avisos del mismo evento no comparten id
         run: python3 .guardrails/scripts/notification-id-guardrails.py .
+
+      # Mismo motivo: RabbitMQ y Service Bus encendidos a la vez no dan error, gana RabbitMQ en silencio y los mensajes
+      # no llegan a Service Bus. Los entrypoints que no usan mensajeria se saltan. pendings/700.
+      - name: Validar que cada entrypoint habla por un solo transporte
+        run: python3 .guardrails/scripts/transport-guardrails.py .
