@@ -22,6 +22,8 @@
 #      Y lo que le retienen va a la auxiliar de su impuesto: renta a 135515, IVA a 135517 e ICA a 135518
 #      (pendings/667).
 #
+#   4. Ninguna regla sembrada mueve una cuenta de grupo (pendings/660: 111005 es de grupo en las nuevas).
+#
 # Uso:  bash workflows/scripts/accounting-seed-guardrails.sh
 set -uo pipefail
 
@@ -182,6 +184,40 @@ if [ -n "$DESCUADRES" ]; then
   FALLOS=$((FALLOS+1))
 else
   echo "${VERDE}Las reglas de retencion apuntan a sus dos cuentas, cada una en su lado.${FIN}"
+fi
+
+# ── 4. Ninguna regla sembrada mueve una cuenta de grupo ──────────────────────────
+# En Colombia el movimiento va a la auxiliar. Con la Wompi Cuenta (pendings/660), 111005 pasó a ser de grupo en las
+# copropiedades nuevas: una regla que se quedara en 111005 asentaría en una cuenta que no recibe movimiento. Las cuentas
+# marcadas newTenantsOnly cuentan como hijas: el plan de una copropiedad nueva las trae.
+DE_GRUPO=$(correr_python "
+import json
+d = json.load(open(r'''$SEED_W''', encoding='utf-8'))
+padres = {a.get('parentCode') for a in d['chartOfAccounts']['accounts'] if a.get('parentCode')}
+fallos = []
+
+for r in d['accountingRules']:
+    for lado in ('debitAccountCode', 'creditAccountCode', 'recognitionAccountCode'):
+        codigo = r.get(lado)
+        if codigo and codigo in padres:
+            fallos.append(r['productName'] + ': ' + lado + ' ' + codigo + ' tiene subcuentas')
+
+for c in d.get('expenseCategoryAccounts', []):
+    for lado in ('debitAccountCode', 'creditAccountCode'):
+        codigo = c.get(lado)
+        if codigo and codigo in padres:
+            fallos.append(c['categoryName'] + ': ' + lado + ' ' + codigo + ' tiene subcuentas')
+
+print(chr(10).join(fallos))
+")
+
+if [ -n "$DE_GRUPO" ]; then
+  echo "${ROJO}Reglas sembradas contra una cuenta de grupo en seed-co.json:${FIN}"
+  sed 's/^/   /' <<< "$DE_GRUPO"
+  echo "   Una cuenta con subcuentas no recibe movimiento: la regla tiene que ir a una auxiliar."
+  FALLOS=$((FALLOS+1))
+else
+  echo "${VERDE}Las reglas sembradas mueven solo cuentas auxiliares.${FIN}"
 fi
 
 exit $((FALLOS > 0 ? 1 : 0))
