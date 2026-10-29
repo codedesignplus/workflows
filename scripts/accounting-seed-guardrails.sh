@@ -19,6 +19,8 @@
 #   3. Cada regla de retencion trae sus DOS cuentas, y cada una en su lado del balance. Lo que la
 #      copropiedad retiene es un pasivo con la DIAN; lo que le retienen a ella es un anticipo a su favor.
 #      Confundirlas deja el asiento cuadrado y el balance al reves, que es el error que no se ve.
+#      Y lo que le retienen va a la auxiliar de su impuesto: renta a 135515, IVA a 135517 e ICA a 135518
+#      (pendings/667).
 #
 # Uso:  bash workflows/scripts/accounting-seed-guardrails.sh
 set -uo pipefail
@@ -141,6 +143,7 @@ import json
 d = json.load(open(r'''$SEED_W''', encoding='utf-8'))
 plan = {a['code']: a for a in d['chartOfAccounts']['accounts']}
 fallos = []
+SUFRIDA_POR_TIPO = {'IncomeTax': '135515', 'Vat': '135517', 'Ica': '135518'}
 
 for r in d['withholdings']:
     practicada = r.get('accountCode')
@@ -162,6 +165,12 @@ for r in d['withholdings']:
             fallos.append(r['code'] + ': ' + codigo + ' (' + lado + ') es ' + cuenta['type'] + ' y tiene que ser ' + tipo)
         elif not codigo.startswith(familia):
             fallos.append(r['code'] + ': ' + codigo + ' (' + lado + ') no cuelga de ' + familia)
+
+    # Lo que le retienen a la copropiedad va a la auxiliar de su impuesto (pendings/667): renta a 135515, IVA a 135517 e ICA a
+    # 135518. Juntas en 135515, la renta descontaba el ICA, que se cruza con el municipio y no con la DIAN.
+    esperada = SUFRIDA_POR_TIPO.get(r.get('kind', 'IncomeTax'))
+    if esperada and not sufrida.startswith(esperada):
+        fallos.append(r['code'] + ': es de ' + r.get('kind', 'IncomeTax') + ' y lo sufrido va a ' + sufrida + ', no a ' + esperada)
 
 print(chr(10).join(fallos))
 ")
