@@ -120,6 +120,14 @@ report "ToDecimal en Commands" \
   "Un command no devuelve importes al cliente. Si un tercero los necesita en unidad mayor, eso va en su adaptador." \
   "$(find_cs -path '*/Commands/*' -print0 | xargs -0 grep -n '\.ToDecimal(' 2>/dev/null)"
 
+# Lo mismo en los consumidores: un evento trae unidades menores, y pasarlas a mayor solo sirve para meterlas en un command de
+# REST que las vuelve a convertir (Kappali pendings/733: el pago en linea y el aprobado tarde iban a ApplyPaymentCommand con un
+# MoneyInput). El camino interno tiene su propia entrada en unidad menor.
+report "ToDecimal en consumidores"   "Un consumidor recibe unidades menores. Si un command necesita el importe, el command interno lo recibe en Money."   "$(find_cs -path '*/Consumers/*' -print0 | xargs -0 grep -n '\.ToDecimal(' 2>/dev/null)"
+
+# Y donde sea: un MoneyInput armado desde un Money es la ida y vuelta de unidad. MoneyInput es lo que teclea una persona.
+report "MoneyInput armado desde unidades menores"   "MoneyInput solo llega por el endpoint REST. Un importe que ya es Money va como Money al command interno."   "$(find_cs -print0 | xargs -0 grep -nE 'new MoneyInput\([^;]*\.ToDecimal\(' 2>/dev/null)"
+
 # ─── 2. La forma del contrato de escritura ───────────────────────────────────────
 #
 # Todo lo que sigue aplica solo a commands expuestos por REST, por la razon explicada arriba.
