@@ -8,7 +8,7 @@ tipo, asi que una copia con otro id, otro codigo u otro nombre deja usuarios apu
 tiene, y la factura electronica sale con un tipo que no existe. No falla nada al compilar ni al arrancar.
 
 Se comparan, pais por pais, todas las copias contra la de ms-catalogs: el mismo conjunto de tipos, con el mismo id, el
-mismo codigo y el mismo nombre.
+mismo codigo, el mismo nombre y la misma abreviatura (la que muestran las pantallas: CC, NIT).
 
 Se corre desde la raiz del espacio de trabajo, donde se ven todos los micros. Con la raiz de un solo micro no hay nada
 que comparar y el script no da veredicto.
@@ -30,7 +30,10 @@ def micro_de(ruta):
 
 def tipos(ruta):
     datos = json.load(open(ruta, encoding="utf-8-sig"))
-    return {str(t["id"]).lower(): (str(t["code"]).strip().upper(), str(t["name"]).strip()) for t in datos}
+    return {
+        str(t["id"]).lower(): (str(t["code"]).strip().upper(), str(t["name"]).strip(), str(t.get("abbreviation") or "").strip())
+        for t in datos
+    }
 
 
 ficheros = {}
